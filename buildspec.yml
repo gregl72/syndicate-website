@@ -1,0 +1,28 @@
+version: 0.2
+
+env:
+  secrets-manager:
+    GHOST_CONTENT_API_KEY: "citizen-journal/ghost:api_key"
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+    commands:
+      - npm ci
+
+  build:
+    commands:
+      - echo "Building site..."
+      - npm run build
+
+  post_build:
+    commands:
+      - echo "Deploying to S3..."
+      - aws s3 sync dist/ s3://syndicate-website-prod --delete
+      - echo "Invalidating CloudFront cache..."
+      - aws cloudfront create-invalidation --distribution-id E8A9C5FXPTO0X --paths "/*"
+
+cache:
+  paths:
+    - node_modules/**/*
