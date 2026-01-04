@@ -1,0 +1,41 @@
+---
+import type { GhostPost } from '../lib/ghost';
+import PostCard from './PostCard.astro';
+
+interface Props {
+  posts: GhostPost[];
+  title?: string;
+  variant?: 'grid' | 'list';
+  columns?: 2 | 3;
+}
+
+const { posts, title, variant = 'list', columns = 2 } = Astro.props;
+
+const gridCols = columns === 3
+  ? 'sm:grid-cols-2 lg:grid-cols-3'
+  : 'sm:grid-cols-2';
+---
+
+<section>
+  {title && (
+    <div class="mb-6 pb-3 border-b border-[var(--color-border)]">
+      <h2 class="text-sm font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+        {title}
+      </h2>
+    </div>
+  )}
+
+  {variant === 'grid' ? (
+    <div class={`grid grid-cols-1 ${gridCols} gap-6 sm:gap-8`}>
+      {posts.map((post) => (
+        <PostCard post={post} variant="grid" />
+      ))}
+    </div>
+  ) : (
+    <div class="divide-y divide-[var(--color-border)]">
+      {posts.map((post) => (
+        <PostCard post={post} variant="list" />
+      ))}
+    </div>
+  )}
+</section>

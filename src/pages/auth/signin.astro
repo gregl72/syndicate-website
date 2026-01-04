@@ -1,0 +1,75 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+
+<Base title="Sign In - Syndicate">
+  <div class="min-h-[calc(100vh-200px)] flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-md">
+      <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold text-[var(--color-text-primary)] mb-2">
+          Welcome back
+        </h1>
+        <p class="text-[var(--color-text-muted)]">
+          Sign in to access your subscription
+        </p>
+      </div>
+
+      <form class="space-y-6" action="#" method="POST">
+        <div>
+          <label for="email" class="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+            Email address
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            class="w-full px-4 py-3 rounded-lg bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] transition-colors"
+            placeholder="you@example.com"
+          />
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+            Password
+          </label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            class="w-full px-4 py-3 rounded-lg bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] transition-colors"
+            placeholder="Enter your password"
+          />
+        </div>
+
+        <div class="flex items-center justify-between">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              class="w-4 h-4 rounded border-[var(--color-border)] bg-[var(--color-bg-tertiary)] text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
+            />
+            <span class="text-sm text-[var(--color-text-muted)]">Remember me</span>
+          </label>
+          <a href="/auth/reset" class="text-sm text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]">
+            Forgot password?
+          </a>
+        </div>
+
+        <button
+          type="submit"
+          class="w-full py-3 px-4 rounded-lg bg-[var(--color-accent)] text-white font-medium hover:bg-[var(--color-accent-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-primary)] transition-colors"
+        >
+          Sign in
+        </button>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-[var(--color-text-muted)]">
+        Don't have an account?
+        <a href="/auth/signup" class="text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]">
+          Subscribe now
+        </a>
+      </p>
+    </div>
+  </div>
+</Base>

@@ -1,0 +1,60 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostList from '../../components/PostList.astro';
+import { getTags, getTagBySlug, getPostsByTag } from '../../lib/ghost';
+
+export async function getStaticPaths() {
+  const tags = await getTags();
+  return tags.map((tag) => ({
+    params: { slug: tag.slug },
+    props: { tag },
+  }));
+}
+
+const { slug } = Astro.params;
+const { tag } = Astro.props;
+
+// Fallback fetch if not from static paths
+const tagData = tag || await getTagBySlug(slug as string);
+
+if (!tagData) {
+  return Astro.redirect('/404');
+}
+
+const { posts } = await getPostsByTag(tagData.slug, { limit: 20 });
+---
+
+<Base
+  title={`${tagData.name} - Syndicate`}
+  description={tagData.description || `Posts tagged with ${tagData.name}`}
+  image={tagData.feature_image || undefined}
+>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <!-- Header -->
+    <header class="mb-10">
+      <p class="text-sm font-medium text-[var(--color-accent)] uppercase tracking-wider mb-2">
+        Tag
+      </p>
+      <h1 class="text-3xl sm:text-4xl font-bold text-[var(--color-text-primary)] mb-4">
+        {tagData.name}
+      </h1>
+      {tagData.description && (
+        <p class="text-lg text-[var(--color-text-secondary)]">
+          {tagData.description}
+        </p>
+      )}
+      <p class="mt-4 text-sm text-[var(--color-text-muted)]">
+        {posts.length} {posts.length === 1 ? 'post' : 'posts'}
+      </p>
+    </header>
+
+    <!-- Posts Grid -->
+    {posts.length > 0 ? (
+      <PostList posts={posts} variant="grid" columns={2} />
+    ) : (
+      <p class="text-[var(--color-text-muted)] text-center py-12">
+        No posts found with this tag.
+      </p>
+    )}
+  </div>
+</Base>

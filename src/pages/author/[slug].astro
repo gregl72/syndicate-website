@@ -1,0 +1,79 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostList from '../../components/PostList.astro';
+import { getAuthors, getAuthorBySlug, getPostsByAuthor } from '../../lib/ghost';
+
+export async function getStaticPaths() {
+  const authors = await getAuthors();
+  return authors.map((author) => ({
+    params: { slug: author.slug },
+    props: { author },
+  }));
+}
+
+const { slug } = Astro.params;
+const { author } = Astro.props;
+
+// Fallback fetch if not from static paths
+const authorData = author || await getAuthorBySlug(slug as string);
+
+if (!authorData) {
+  return Astro.redirect('/404');
+}
+
+const { posts } = await getPostsByAuthor(authorData.slug, { limit: 20 });
+---
+
+<Base
+  title={`${authorData.name} - Syndicate`}
+  description={authorData.bio || `Posts by ${authorData.name}`}
+  image={authorData.profile_image || undefined}
+>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <!-- Author Header -->
+    <header class="mb-10 text-center">
+      {authorData.profile_image && (
+        <img
+          src={authorData.profile_image}
+          alt={authorData.name}
+          class="w-24 h-24 rounded-full object-cover mx-auto mb-6"
+        />
+      )}
+      <h1 class="text-3xl sm:text-4xl font-bold text-[var(--color-text-primary)] mb-2">
+        {authorData.name}
+      </h1>
+      {authorData.location && (
+        <p class="text-sm text-[var(--color-text-muted)] mb-4">
+          {authorData.location}
+        </p>
+      )}
+      {authorData.bio && (
+        <p class="text-lg text-[var(--color-text-secondary)] max-w-2xl mx-auto">
+          {authorData.bio}
+        </p>
+      )}
+      {authorData.website && (
+        <a
+          href={authorData.website}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block mt-4 text-sm text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]"
+        >
+          {authorData.website.replace(/^https?:\/\//, '')}
+        </a>
+      )}
+      <p class="mt-4 text-sm text-[var(--color-text-muted)]">
+        {posts.length} {posts.length === 1 ? 'post' : 'posts'}
+      </p>
+    </header>
+
+    <!-- Posts Grid -->
+    {posts.length > 0 ? (
+      <PostList posts={posts} variant="grid" columns={2} />
+    ) : (
+      <p class="text-[var(--color-text-muted)] text-center py-12">
+        No posts found by this author.
+      </p>
+    )}
+  </div>
+</Base>

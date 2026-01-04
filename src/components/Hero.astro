@@ -1,0 +1,60 @@
+---
+import type { GhostPost } from '../lib/ghost';
+import { formatDate } from '../lib/ghost';
+
+interface Props {
+  post: GhostPost;
+}
+
+const { post } = Astro.props;
+---
+
+<article class="group">
+  <a href={`/posts/${post.slug}`} class="block">
+    {post.feature_image && (
+      <div class="aspect-video overflow-hidden rounded-lg bg-[var(--color-bg-tertiary)] mb-6">
+        <img
+          src={post.feature_image}
+          alt={post.title}
+          class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+        />
+      </div>
+    )}
+
+    <div class="space-y-3">
+      {post.primary_tag && (
+        <span class="inline-block text-xs font-medium text-[var(--color-accent)] uppercase tracking-wider">
+          {post.primary_tag.name}
+        </span>
+      )}
+
+      <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors leading-tight">
+        {post.title}
+      </h1>
+
+      {post.excerpt && (
+        <p class="text-base sm:text-lg text-[var(--color-text-secondary)] line-clamp-3">
+          {post.custom_excerpt || post.excerpt}
+        </p>
+      )}
+
+      <div class="flex items-center gap-3 pt-2">
+        {post.primary_author?.profile_image && (
+          <img
+            src={post.primary_author.profile_image}
+            alt={post.primary_author.name}
+            class="w-10 h-10 rounded-full object-cover"
+          />
+        )}
+        <div>
+          <p class="text-sm font-medium text-[var(--color-text-primary)]">
+            {post.primary_author?.name}
+          </p>
+          <p class="text-xs text-[var(--color-text-muted)]">
+            {formatDate(post.published_at)} &middot; {post.reading_time} min read
+          </p>
+        </div>
+      </div>
+    </div>
+  </a>
+</article>

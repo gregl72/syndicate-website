@@ -1,0 +1,42 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import PostList from '../components/PostList.astro';
+import { getFeaturedPost, getPosts } from '../lib/ghost';
+
+// Fetch featured post and recent posts
+const featuredPost = await getFeaturedPost();
+const { posts: recentPosts } = await getPosts({
+  limit: 10,
+  filter: featuredPost ? `id:-${featuredPost.id}` : undefined,
+});
+
+// Split posts for different sections
+const latestPosts = recentPosts.slice(0, 5);
+const morePosts = recentPosts.slice(5);
+---
+
+<Base title="Syndicate - Independent Journalism">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <!-- Featured Post / Hero -->
+    {featuredPost && (
+      <section class="mb-12">
+        <Hero post={featuredPost} />
+      </section>
+    )}
+
+    <!-- Latest Posts -->
+    {latestPosts.length > 0 && (
+      <section class="mb-12">
+        <PostList posts={latestPosts} title="Latest" variant="list" />
+      </section>
+    )}
+
+    <!-- More Stories -->
+    {morePosts.length > 0 && (
+      <section>
+        <PostList posts={morePosts} title="More Stories" variant="grid" columns={2} />
+      </section>
+    )}
+  </div>
+</Base>

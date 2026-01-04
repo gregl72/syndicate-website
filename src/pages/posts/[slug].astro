@@ -1,0 +1,121 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getAllPosts, getPostBySlug, formatDate } from '../../lib/ghost';
+
+export async function getStaticPaths() {
+  const posts = await getAllPosts();
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { slug } = Astro.params;
+const { post } = Astro.props;
+
+// Fallback fetch if not from static paths
+const postData = post || await getPostBySlug(slug as string);
+
+if (!postData) {
+  return Astro.redirect('/404');
+}
+---
+
+<Base
+  title={`${postData.title} - Syndicate`}
+  description={postData.custom_excerpt || postData.excerpt}
+  image={postData.feature_image || undefined}
+>
+  <!-- Reading Progress -->
+  <div id="reading-progress" class="reading-progress"></div>
+
+  <article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <!-- Header -->
+    <header class="mb-8">
+      {postData.primary_tag && (
+        <a
+          href={`/tag/${postData.primary_tag.slug}`}
+          class="inline-block text-xs font-medium text-[var(--color-accent)] uppercase tracking-wider mb-4 hover:text-[var(--color-accent-hover)]"
+        >
+          {postData.primary_tag.name}
+        </a>
+      )}
+
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-[var(--color-text-primary)] leading-tight mb-6">
+        {postData.title}
+      </h1>
+
+      {postData.custom_excerpt && (
+        <p class="text-lg sm:text-xl text-[var(--color-text-secondary)] mb-6">
+          {postData.custom_excerpt}
+        </p>
+      )}
+
+      <div class="flex items-center gap-4 pb-6 border-b border-[var(--color-border)]">
+        {postData.primary_author?.profile_image && (
+          <img
+            src={postData.primary_author.profile_image}
+            alt={postData.primary_author.name}
+            class="w-12 h-12 rounded-full object-cover"
+          />
+        )}
+        <div>
+          {postData.primary_author && (
+            <a
+              href={`/author/${postData.primary_author.slug}`}
+              class="block text-base font-medium text-[var(--color-text-primary)] hover:text-[var(--color-accent)]"
+            >
+              {postData.primary_author.name}
+            </a>
+          )}
+          <p class="text-sm text-[var(--color-text-muted)]">
+            {formatDate(postData.published_at)} &middot; {postData.reading_time} min read
+          </p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Feature Image -->
+    {postData.feature_image && (
+      <figure class="mb-8 -mx-4 sm:mx-0">
+        <img
+          src={postData.feature_image}
+          alt={postData.title}
+          class="w-full rounded-lg"
+        />
+      </figure>
+    )}
+
+    <!-- Content -->
+    <div class="post-content" set:html={postData.html} />
+
+    <!-- Tags -->
+    {postData.tags && postData.tags.length > 0 && (
+      <footer class="mt-12 pt-8 border-t border-[var(--color-border)]">
+        <div class="flex flex-wrap gap-2">
+          {postData.tags.map((tag) => (
+            <a
+              href={`/tag/${tag.slug}`}
+              class="inline-block px-3 py-1 text-sm text-[var(--color-text-secondary)] bg-[var(--color-bg-tertiary)] rounded-full hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)] transition-colors"
+            >
+              {tag.name}
+            </a>
+          ))}
+        </div>
+      </footer>
+    )}
+  </article>
+
+  <script>
+    // Reading progress bar
+    const progressBar = document.getElementById('reading-progress');
+    if (progressBar) {
+      window.addEventListener('scroll', () => {
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const scrollPos = window.scrollY;
+        const progress = (scrollPos / docHeight) * 100;
+        progressBar.style.width = `${progress}%`;
+      });
+    }
+  </script>
+</Base>

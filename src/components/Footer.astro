@@ -1,0 +1,79 @@
+---
+// Footer component
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="border-t border-[var(--color-border)] bg-[var(--color-bg-secondary)] mt-auto">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Brand -->
+      <div>
+        <span class="text-lg font-bold text-[var(--color-text-primary)]">SYNDICATE</span>
+        <p class="mt-2 text-sm text-[var(--color-text-muted)]">
+          Independent journalism for the modern era.
+        </p>
+      </div>
+
+      <!-- Links -->
+      <div>
+        <h4 class="text-sm font-semibold text-[var(--color-text-primary)] mb-4">Navigate</h4>
+        <ul class="space-y-2">
+          <li>
+            <a
+              href="/"
+              class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
+            >
+              Home
+            </a>
+          </li>
+          <li>
+            <a
+              href="/tag/news"
+              class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
+            >
+              News
+            </a>
+          </li>
+          <li>
+            <a
+              href="/tag/opinion"
+              class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
+            >
+              Opinion
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Legal -->
+      <div>
+        <h4 class="text-sm font-semibold text-[var(--color-text-primary)] mb-4">Legal</h4>
+        <ul class="space-y-2">
+          <li>
+            <a
+              href="/privacy"
+              class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
+            >
+              Privacy Policy
+            </a>
+          </li>
+          <li>
+            <a
+              href="/terms"
+              class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
+            >
+              Terms of Service
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Bottom -->
+    <div class="mt-8 pt-8 border-t border-[var(--color-border)]">
+      <p class="text-sm text-[var(--color-text-muted)] text-center">
+        &copy; {currentYear} Syndicate. All rights reserved.
+      </p>
+    </div>
+  </div>
+</footer>
