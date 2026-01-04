@@ -4,49 +4,47 @@
 
 <header class="border-b border-[var(--color-border)] bg-[var(--color-bg-primary)]">
   <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between h-16">
+    <!-- Top row: Logo + Actions -->
+    <div class="flex items-center justify-between h-14">
       <!-- Logo -->
       <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
-        <span class="text-xl font-bold text-[var(--color-text-primary)]">SYNDICATE</span>
+        <span class="text-xl font-bold text-[var(--color-text-primary)]">citizen journal</span>
       </a>
 
-      <!-- Navigation -->
-      <nav class="hidden sm:flex items-center gap-6">
-        <a
-          href="/"
-          class="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-        >
-          Home
-        </a>
-        <a
-          href="/tag/news"
-          class="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-        >
-          News
-        </a>
-        <a
-          href="/tag/opinion"
-          class="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-        >
-          Opinion
-        </a>
-      </nav>
-
-      <!-- Auth / Subscribe -->
-      <div class="flex items-center gap-4">
-        <a
-          href="/auth/signin"
-          class="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors hidden sm:block"
-        >
-          Sign in
-        </a>
-        <a
-          href="/auth/signup"
-          class="text-sm font-medium px-4 py-2 rounded-md bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] transition-colors"
-        >
-          Subscribe
-        </a>
-      </div>
+      <!-- Actions -->
+      <a
+        href="/get-the-app"
+        class="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+      >
+        get the app
+      </a>
     </div>
+
+    <!-- Navigation row -->
+    <nav class="flex items-center gap-1 py-2 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+      <a href="/tag/national" class="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors px-2 py-1 whitespace-nowrap">national</a>
+      <a href="/tag/kansas" class="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors px-2 py-1 whitespace-nowrap">kansas</a>
+      <a href="/tag/wyoming" class="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors px-2 py-1 whitespace-nowrap">wyoming</a>
+      <a href="/tag/arizona" class="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors px-2 py-1 whitespace-nowrap">arizona</a>
+      <a href="/tag/south-dakota" class="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors px-2 py-1 whitespace-nowrap">south dakota</a>
+      <a href="/tag/illinois" class="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors px-2 py-1 whitespace-nowrap">illinois</a>
+      <a href="/tag/nebraska" class="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors px-2 py-1 whitespace-nowrap">nebraska</a>
+      <span class="text-[var(--color-border)] px-1">|</span>
+      <a href="/tag/columns" class="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors px-2 py-1 whitespace-nowrap">columns</a>
+      <a href="/tag/reviews" class="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors px-2 py-1 whitespace-nowrap">reviews</a>
+      <span class="text-[var(--color-border)] px-1">|</span>
+      <a href="/about" class="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors px-2 py-1 whitespace-nowrap">about</a>
+      <a href="/contact" class="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors px-2 py-1 whitespace-nowrap">contact us</a>
+    </nav>
   </div>
 </header>
+
+<style>
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+</style>

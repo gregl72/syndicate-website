@@ -11,12 +11,11 @@ const { posts: recentPosts } = await getPosts({
   filter: featuredPost ? `id:-${featuredPost.id}` : undefined,
 });
 
-// Split posts for different sections
-const latestPosts = recentPosts.slice(0, 5);
-const morePosts = recentPosts.slice(5);
+// Get latest posts
+const latestPosts = recentPosts.slice(0, 10);
 ---
 
-<Base title="Syndicate - Independent Journalism">
+<Base title="citizen journal">
   <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
     <!-- Featured Post / Hero -->
     {featuredPost && (
@@ -27,15 +26,8 @@ const morePosts = recentPosts.slice(5);
 
     <!-- Latest Posts -->
     {latestPosts.length > 0 && (
-      <section class="mb-12">
-        <PostList posts={latestPosts} title="Latest" variant="list" />
-      </section>
-    )}
-
-    <!-- More Stories -->
-    {morePosts.length > 0 && (
       <section>
-        <PostList posts={morePosts} title="More Stories" variant="grid" columns={2} />
+        <PostList posts={latestPosts} title="Latest" variant="list" />
       </section>
     )}
   </div>
