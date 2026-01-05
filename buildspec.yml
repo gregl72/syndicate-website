@@ -3,6 +3,9 @@ version: 0.2
 env:
   secrets-manager:
     GHOST_CONTENT_API_KEY: "citizen-journal/ghost:api_key"
+  variables:
+    SUPABASE_URL: "https://njdfevfwljuyzipguqfp.supabase.co"
+    SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qZGZldmZ3bGp1eXppcGd1cWZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NzY1ODQsImV4cCI6MjA4MzA1MjU4NH0.fTreOVawx0Pk03t_nQR3-GcKaD7yC2Ov9WZOjxansQw"
 
 phases:
   install:
@@ -19,7 +22,7 @@ phases:
   post_build:
     commands:
       - echo "Deploying to S3..."
-      - aws s3 sync dist/ s3://syndicate-website-prod --delete
+      - aws s3 sync dist/ s3://syndicate-website-prod/ --delete
       - echo "Invalidating CloudFront cache..."
       - aws cloudfront create-invalidation --distribution-id E8A9C5FXPTO0X --paths "/*"
 
