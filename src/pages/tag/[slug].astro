@@ -21,7 +21,12 @@ if (!tagData) {
   return Astro.redirect('/404');
 }
 
-const { posts } = await getPostsByTag(tagData.slug, { limit: 20 });
+const { posts, pagination } = await getPostsByTag(tagData.slug, { limit: 15 });
+const hasMore = pagination.next !== null;
+
+// Ghost API config for client-side loading
+const ghostUrl = import.meta.env.GHOST_URL;
+const ghostKey = import.meta.env.GHOST_CONTENT_API_KEY;
 ---
 
 <Base
@@ -30,27 +35,27 @@ const { posts } = await getPostsByTag(tagData.slug, { limit: 20 });
   image={tagData.feature_image || undefined}
 >
   <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-    <!-- Header -->
-    <header class="mb-10">
-      <p class="text-sm font-medium text-[var(--color-accent)] uppercase tracking-wider mb-2">
-        Tag
-      </p>
-      <h1 class="text-3xl sm:text-4xl font-bold text-[var(--color-text-primary)] mb-4">
-        {tagData.name}
-      </h1>
-      {tagData.description && (
-        <p class="text-lg text-[var(--color-text-secondary)]">
-          {tagData.description}
-        </p>
-      )}
-      <p class="mt-4 text-sm text-[var(--color-text-muted)]">
-        {posts.length} {posts.length === 1 ? 'post' : 'posts'}
-      </p>
-    </header>
-
-    <!-- Posts Grid -->
     {posts.length > 0 ? (
-      <PostList posts={posts} variant="grid" columns={2} />
+      <>
+        <PostList posts={posts} variant="list" />
+
+        <div id="more-posts"></div>
+
+        {hasMore && (
+          <div class="mt-8 text-center">
+            <button
+              id="load-more"
+              data-tag={tagData.slug}
+              data-page="2"
+              data-ghost-url={ghostUrl}
+              data-ghost-key={ghostKey}
+              class="px-6 py-3 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
+            >
+              Load More
+            </button>
+          </div>
+        )}
+      </>
     ) : (
       <p class="text-[var(--color-text-muted)] text-center py-12">
         No posts found with this tag.
@@ -58,3 +63,89 @@ const { posts } = await getPostsByTag(tagData.slug, { limit: 20 });
     )}
   </div>
 </Base>
+
+<script>
+  function formatDate(dateString: string): string {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }
+
+  function createPostCard(post: any): string {
+    const imageHtml = post.feature_image ? `
+      <div class="flex-shrink-0 w-24 h-16 sm:w-32 sm:h-20 overflow-hidden rounded bg-[var(--color-bg-tertiary)]">
+        <img
+          src="${post.feature_image}"
+          alt="${post.title}"
+          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          loading="lazy"
+        />
+      </div>
+    ` : '';
+
+    return `
+      <article class="group py-4 border-b border-[var(--color-border)]">
+        <a href="/posts/${post.slug}" class="flex gap-4">
+          ${imageHtml}
+          <div class="flex-1 min-w-0">
+            <h3 class="text-base font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors line-clamp-2 mb-1">
+              ${post.title}
+            </h3>
+            <p class="text-xs text-[var(--color-text-muted)]">
+              ${post.primary_author?.name || 'Staff'} &middot; ${formatDate(post.published_at)} &middot; ${post.reading_time} min read
+            </p>
+          </div>
+        </a>
+      </article>
+    `;
+  }
+
+  const loadMoreBtn = document.getElementById('load-more') as HTMLButtonElement;
+
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener('click', async () => {
+      const tag = loadMoreBtn.dataset.tag;
+      const page = parseInt(loadMoreBtn.dataset.page || '2');
+      const ghostUrl = loadMoreBtn.dataset.ghostUrl;
+      const ghostKey = loadMoreBtn.dataset.ghostKey;
+
+      loadMoreBtn.textContent = 'Loading...';
+      loadMoreBtn.disabled = true;
+
+      try {
+        const url = new URL(`${ghostUrl}/ghost/api/content/posts/`);
+        url.searchParams.set('key', ghostKey!);
+        url.searchParams.set('filter', `tag:${tag}`);
+        url.searchParams.set('limit', '15');
+        url.searchParams.set('page', String(page));
+        url.searchParams.set('include', 'authors,tags');
+
+        const res = await fetch(url.toString());
+        const data = await res.json();
+
+        if (data.posts && data.posts.length > 0) {
+          const container = document.getElementById('more-posts');
+          const postsHtml = data.posts.map(createPostCard).join('');
+          container!.insertAdjacentHTML('beforeend', postsHtml);
+
+          loadMoreBtn.dataset.page = String(page + 1);
+
+          if (data.meta.pagination.next === null) {
+            loadMoreBtn.remove();
+          } else {
+            loadMoreBtn.textContent = 'Load More';
+            loadMoreBtn.disabled = false;
+          }
+        } else {
+          loadMoreBtn.remove();
+        }
+      } catch (error) {
+        console.error('Error loading more posts:', error);
+        loadMoreBtn.textContent = 'Load More';
+        loadMoreBtn.disabled = false;
+      }
+    });
+  }
+</script>
