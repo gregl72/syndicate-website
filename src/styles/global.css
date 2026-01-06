@@ -141,7 +141,9 @@ a:hover {
 .kg-bookmark-content {
   flex: 1;
   padding: 1.25rem;
+  padding-bottom: 2.5rem;
   min-width: 0;
+  position: relative;
 }
 
 .kg-bookmark-title {
@@ -170,6 +172,9 @@ a:hover {
 }
 
 .kg-bookmark-metadata {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 1.25rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
