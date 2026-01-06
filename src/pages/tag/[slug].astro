@@ -1,7 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
-import PostList from '../../components/PostList.astro';
-import { getTags, getTagBySlug, getPostsByTag } from '../../lib/ghost';
+import { getTags, getTagBySlug, getPostsByTag, formatDate } from '../../lib/ghost';
 
 export async function getStaticPaths() {
   const tags = await getTags();
@@ -27,6 +26,33 @@ const hasMore = pagination.next !== null;
 // Ghost API config for client-side loading
 const ghostUrl = import.meta.env.GHOST_URL;
 const ghostKey = import.meta.env.GHOST_CONTENT_API_KEY;
+
+// Extract unique internal tags (tags starting with #)
+const internalTagsMap = new Map<string, { name: string; slug: string }>();
+posts.forEach(post => {
+  (post.tags || []).forEach(tag => {
+    if (tag.name.startsWith('#') && !internalTagsMap.has(tag.slug)) {
+      internalTagsMap.set(tag.slug, { name: tag.name, slug: tag.slug });
+    }
+  });
+});
+const internalTags = Array.from(internalTagsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+
+// Debug logging to verify tag detection
+console.log('Tag Debug Info:', {
+  totalPosts: posts.length,
+  allTagsCount: posts.reduce((count, post) => count + (post.tags?.length || 0), 0),
+  internalTagsFound: internalTags.length,
+  internalTags: internalTags.map(t => t.name)
+});
+
+// Helper to get internal tag slugs for a post
+function getInternalTagSlugs(post: typeof posts[0]): string {
+  return (post.tags || [])
+    .filter(tag => tag.name.startsWith('#'))
+    .map(tag => tag.slug)
+    .join(',');
+}
 ---
 
 <Base
@@ -35,9 +61,65 @@ const ghostKey = import.meta.env.GHOST_CONTENT_API_KEY;
   image={tagData.feature_image || undefined}
 >
   <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div class="mb-6 flex items-center justify-between">
+      <h2 class="text-xl font-bold text-[var(--color-text-primary)]">
+        {tagData.name}
+      </h2>
+      <div class="flex items-center gap-2">
+        {internalTags.length > 0 ? (
+          <>
+            <span class="text-xs text-[var(--color-text-muted)]">Filter:</span>
+            <label for="category-filter" class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              <select
+                id="category-filter"
+                class="px-4 py-2 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] transition-all"
+              >
+                <option value="">All Categories</option>
+                {internalTags.map(tag => (
+                  <option value={tag.slug}>{tag.name}</option>
+                ))}
+              </select>
+            </label>
+          </>
+        ) : (
+          <span class="text-xs text-[var(--color-text-muted)] italic">
+            No category filters available
+          </span>
+        )}
+      </div>
+    </div>
+
     {posts.length > 0 ? (
       <>
-        <PostList posts={posts} variant="list" />
+        <div id="posts-container" class="divide-y divide-[var(--color-border)]">
+          {posts.map((post) => (
+            <article data-tags={getInternalTagSlugs(post)} class="group py-4">
+              <a href={`/posts/${post.slug}`} class="flex gap-4">
+                {post.feature_image && (
+                  <div class="flex-shrink-0 w-24 h-16 sm:w-32 sm:h-20 overflow-hidden rounded bg-[var(--color-bg-tertiary)]">
+                    <img
+                      src={post.feature_image}
+                      alt={post.title}
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+                <div class="flex-1 min-w-0">
+                  <h3 class="text-base font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors line-clamp-2 mb-1">
+                    {post.title}
+                  </h3>
+                  <p class="text-xs text-[var(--color-text-muted)]">
+                    {post.primary_author?.name || 'Staff'} &middot; {formatDate(post.published_at)} &middot; {post.reading_time} min read
+                  </p>
+                </div>
+              </a>
+            </article>
+          ))}
+        </div>
 
         <div id="more-posts"></div>
 
@@ -73,6 +155,14 @@ const ghostKey = import.meta.env.GHOST_CONTENT_API_KEY;
     });
   }
 
+  // Get internal tag slugs from a post's tags array
+  function getInternalTagSlugs(tags: any[]): string {
+    return (tags || [])
+      .filter((tag: any) => tag.name?.startsWith('#'))
+      .map((tag: any) => tag.slug)
+      .join(',');
+  }
+
   function createPostCard(post: any): string {
     const imageHtml = post.feature_image ? `
       <div class="flex-shrink-0 w-24 h-16 sm:w-32 sm:h-20 overflow-hidden rounded bg-[var(--color-bg-tertiary)]">
@@ -85,8 +175,10 @@ const ghostKey = import.meta.env.GHOST_CONTENT_API_KEY;
       </div>
     ` : '';
 
+    const dataTags = getInternalTagSlugs(post.tags);
+
     return `
-      <article class="group py-4 border-b border-[var(--color-border)]">
+      <article data-tags="${dataTags}" class="group py-4 border-b border-[var(--color-border)]">
         <a href="/posts/${post.slug}" class="flex gap-4">
           ${imageHtml}
           <div class="flex-1 min-w-0">
@@ -100,6 +192,34 @@ const ghostKey = import.meta.env.GHOST_CONTENT_API_KEY;
         </a>
       </article>
     `;
+  }
+
+  // Filter posts by selected internal tag
+  function filterPosts(selectedTag: string) {
+    document.querySelectorAll('[data-tags]').forEach((article) => {
+      const tags = (article as HTMLElement).dataset.tags?.split(',') || [];
+      if (!selectedTag || tags.includes(selectedTag)) {
+        (article as HTMLElement).style.display = '';
+      } else {
+        (article as HTMLElement).style.display = 'none';
+      }
+    });
+  }
+
+  // Category filter dropdown
+  const filterSelect = document.getElementById('category-filter') as HTMLSelectElement;
+  if (filterSelect) {
+    filterSelect.addEventListener('change', () => {
+      const selectedValue = filterSelect.value;
+      filterPosts(selectedValue);
+
+      // Add visual feedback when filter is active
+      if (selectedValue) {
+        filterSelect.classList.add('ring-2', 'ring-blue-500');
+      } else {
+        filterSelect.classList.remove('ring-2', 'ring-blue-500');
+      }
+    });
   }
 
   const loadMoreBtn = document.getElementById('load-more') as HTMLButtonElement;
@@ -129,6 +249,12 @@ const ghostKey = import.meta.env.GHOST_CONTENT_API_KEY;
           const container = document.getElementById('more-posts');
           const postsHtml = data.posts.map(createPostCard).join('');
           container!.insertAdjacentHTML('beforeend', postsHtml);
+
+          // Apply current filter to newly loaded posts
+          const currentFilter = filterSelect?.value || '';
+          if (currentFilter) {
+            filterPosts(currentFilter);
+          }
 
           loadMoreBtn.dataset.page = String(page + 1);
 
