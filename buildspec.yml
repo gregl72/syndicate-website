@@ -26,7 +26,12 @@ phases:
       - npm run build
 
       - echo "Building Docker container..."
-      - docker build -t $ECR_REPOSITORY:latest .
+      - docker build -t $ECR_REPOSITORY:latest
+          --build-arg GHOST_URL=$GHOST_URL
+          --build-arg GHOST_CONTENT_API_KEY=$GHOST_CONTENT_API_KEY
+          --build-arg SUPABASE_URL=$SUPABASE_URL
+          --build-arg SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
+          .
       - docker tag $ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
   post_build:

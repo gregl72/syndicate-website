@@ -16,6 +16,18 @@ RUN npm ci --only=production
 # Copy built application
 COPY . .
 
+# Accept build arguments for environment variables
+ARG GHOST_URL
+ARG GHOST_CONTENT_API_KEY
+ARG SUPABASE_URL
+ARG SUPABASE_ANON_KEY
+
+# Set environment variables for build
+ENV GHOST_URL=$GHOST_URL
+ENV GHOST_CONTENT_API_KEY=$GHOST_CONTENT_API_KEY
+ENV SUPABASE_URL=$SUPABASE_URL
+ENV SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
+
 # Build Astro in SSR mode
 RUN npm run build
 
