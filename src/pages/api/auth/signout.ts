@@ -6,6 +6,9 @@ import { createSupabaseServerClient } from '../../../lib/supabase-server';
 
 export const prerender = false;
 
+// Supabase auth cookie name based on project ref
+const AUTH_COOKIE_NAME = 'sb-njdfevfwljuyzipguqfp-auth-token';
+
 export const POST: APIRoute = async ({ cookies }) => {
   try {
     const supabase = createSupabaseServerClient(cookies);
@@ -13,7 +16,9 @@ export const POST: APIRoute = async ({ cookies }) => {
     // Sign out from Supabase
     await supabase.auth.signOut();
 
-    // Cookies are automatically cleared by supabase-server storage adapter
+    // Explicitly delete the auth cookie to ensure it's cleared
+    cookies.delete(AUTH_COOKIE_NAME, { path: '/' });
+
     return new Response(JSON.stringify({
       success: true
     }), {
