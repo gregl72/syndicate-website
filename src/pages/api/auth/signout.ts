@@ -6,28 +6,39 @@ import { createSupabaseServerClient } from '../../../lib/supabase-server';
 
 export const prerender = false;
 
-// Supabase auth cookie name based on project ref
-const AUTH_COOKIE_NAME = 'sb-njdfevfwljuyzipguqfp-auth-token';
-
-export const POST: APIRoute = async ({ cookies }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const supabase = createSupabaseServerClient(cookies);
 
     // Sign out from Supabase
     await supabase.auth.signOut();
 
-    // Build Set-Cookie header to expire the auth cookie
-    // Must match the original cookie's path and attributes
-    const expiredCookie = `${AUTH_COOKIE_NAME}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax`;
+    // Find all Supabase auth cookies from the request and expire them
+    const cookieHeader = request.headers.get('cookie') || '';
+    const cookieNames = cookieHeader
+      .split(';')
+      .map(c => c.trim().split('=')[0])
+      .filter(name => name.startsWith('sb-'));
+
+    // Build Set-Cookie headers to expire all Supabase cookies
+    const expireCookies = cookieNames.map(name =>
+      `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax`
+    );
+
+    // If no cookies found, still try the default name
+    if (expireCookies.length === 0) {
+      expireCookies.push('sb-njdfevfwljuyzipguqfp-auth-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax');
+    }
+
+    const headers = new Headers();
+    headers.set('Content-Type', 'application/json');
+    expireCookies.forEach(cookie => headers.append('Set-Cookie', cookie));
 
     return new Response(JSON.stringify({
       success: true
     }), {
       status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Set-Cookie': expiredCookie
-      }
+      headers
     });
 
   } catch (error) {
