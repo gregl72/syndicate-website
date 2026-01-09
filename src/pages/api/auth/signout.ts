@@ -16,14 +16,18 @@ export const POST: APIRoute = async ({ cookies }) => {
     // Sign out from Supabase
     await supabase.auth.signOut();
 
-    // Explicitly delete the auth cookie to ensure it's cleared
-    cookies.delete(AUTH_COOKIE_NAME, { path: '/' });
+    // Build Set-Cookie header to expire the auth cookie
+    // Must match the original cookie's path and attributes
+    const expiredCookie = `${AUTH_COOKIE_NAME}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax`;
 
     return new Response(JSON.stringify({
       success: true
     }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: {
+        'Content-Type': 'application/json',
+        'Set-Cookie': expiredCookie
+      }
     });
 
   } catch (error) {
