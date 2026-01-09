@@ -1,4 +1,6 @@
 ---
+export const prerender = false;
+
 import Base from '../../layouts/Base.astro';
 ---
 
@@ -14,7 +16,10 @@ import Base from '../../layouts/Base.astro';
         </p>
       </div>
 
-      <form class="space-y-6" action="#" method="POST">
+      <!-- Error message -->
+      <div id="error-message" class="hidden mb-4 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500"></div>
+
+      <form id="signin-form" class="space-y-6" action="#" method="POST">
         <div>
           <label for="email" class="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
             Email address
@@ -72,4 +77,53 @@ import Base from '../../layouts/Base.astro';
       </p>
     </div>
   </div>
+
+  <script>
+    const form = document.getElementById('signin-form') as HTMLFormElement;
+    const errorDiv = document.getElementById('error-message') as HTMLDivElement;
+    const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Clear previous errors
+      errorDiv.classList.add('hidden');
+      errorDiv.textContent = '';
+
+      // Disable submit button
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Signing in...';
+
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch('/api/auth/signin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: formData.get('email'),
+            password: formData.get('password')
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Success - redirect to homepage
+          window.location.href = '/';
+        } else {
+          // Show error
+          errorDiv.textContent = data.error || 'Sign in failed. Please try again.';
+          errorDiv.classList.remove('hidden');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign in';
+        }
+      } catch (error) {
+        errorDiv.textContent = 'An unexpected error occurred. Please try again.';
+        errorDiv.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign in';
+      }
+    });
+  </script>
 </Base>

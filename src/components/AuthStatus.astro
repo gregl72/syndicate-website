@@ -1,0 +1,53 @@
+---
+// AuthStatus Component
+// Shows authentication state in header with signin/signout actions
+
+interface Props {
+  user: {
+    email: string;
+    id: string;
+  } | null;
+}
+
+const { user } = Astro.props;
+---
+
+{user ? (
+  <!-- Authenticated user -->
+  <div class="flex items-center gap-4">
+    <span class="text-sm text-[var(--color-text-secondary)]">{user.email}</span>
+    <button
+      id="signout-btn"
+      class="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+    >
+      Sign Out
+    </button>
+  </div>
+
+  <script>
+    document.getElementById('signout-btn')?.addEventListener('click', async () => {
+      try {
+        await fetch('/api/auth/signout', { method: 'POST' });
+        window.location.href = '/';
+      } catch (error) {
+        console.error('Sign out error:', error);
+      }
+    });
+  </script>
+) : (
+  <!-- Not authenticated -->
+  <div class="flex items-center gap-4">
+    <a
+      href="/auth/signin"
+      class="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+    >
+      Sign In
+    </a>
+    <a
+      href="/auth/signup"
+      class="text-sm font-medium text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] transition-colors"
+    >
+      Subscribe
+    </a>
+  </div>
+)}

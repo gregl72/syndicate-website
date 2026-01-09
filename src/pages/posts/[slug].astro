@@ -2,7 +2,10 @@
 export const prerender = false;
 
 import Base from '../../layouts/Base.astro';
+import Paywall from '../../components/Paywall.astro';
 import { getPostBySlug, formatDate } from '../../lib/ghost';
+import { createSupabaseServerClient, getCurrentUser } from '../../lib/supabase-server';
+import { canAccessPost, logAccessAttempt } from '../../lib/paywall';
 
 // SSR mode - fetch post data on each request
 const { slug } = Astro.params;
@@ -11,6 +14,31 @@ const postData = await getPostBySlug(slug as string);
 if (!postData) {
   return Astro.redirect('/404');
 }
+
+// Initialize Supabase with cookies
+const supabase = createSupabaseServerClient(Astro.cookies);
+
+// Get current user from session
+const user = await getCurrentUser(Astro.cookies);
+
+// Check if user can access this post
+const accessCheck = await canAccessPost(
+  user?.id || null,
+  postData,
+  supabase
+);
+
+// Log the access attempt
+await logAccessAttempt(
+  user?.id || null,
+  slug as string,
+  accessCheck.granted,
+  accessCheck.reason,
+  supabase
+);
+
+// Determine what to render
+const showFullContent = accessCheck.granted;
 ---
 
 <Base
@@ -78,8 +106,20 @@ if (!postData) {
       </figure>
     )}
 
-    <!-- Content -->
-    <div class="post-content" set:html={postData.html} />
+    <!-- Conditional content rendering -->
+    {showFullContent ? (
+      <!-- Show full article -->
+      <div class="post-content" set:html={postData.html} />
+    ) : (
+      <!-- Show paywall -->
+      <Paywall
+        isAuthenticated={!!user}
+        post={{
+          title: postData.title,
+          excerpt: postData.custom_excerpt || postData.excerpt
+        }}
+      />
+    )}
 
     <!-- Tags -->
     {postData.tags && postData.tags.length > 0 && (

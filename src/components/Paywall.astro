@@ -1,0 +1,88 @@
+---
+// Paywall Component
+// Displayed when user doesn't have access to paid content
+
+interface Props {
+  isAuthenticated: boolean;
+  post: {
+    title: string;
+    excerpt: string;
+  };
+}
+
+const { isAuthenticated, post } = Astro.props;
+---
+
+<div class="paywall-container max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Blurred content preview -->
+  <div class="content-preview blurred mb-8">
+    <p class="text-[var(--color-text-secondary)]">{post.excerpt}</p>
+  </div>
+
+  <!-- Paywall message -->
+  <div class="paywall-message bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg p-8 text-center">
+    <div class="lock-icon mb-4">
+      <svg class="w-12 h-12 mx-auto text-[var(--color-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+      </svg>
+    </div>
+
+    {isAuthenticated ? (
+      <!-- User signed in but not subscribed -->
+      <>
+        <h3 class="text-2xl font-bold text-[var(--color-text-primary)] mb-4">Premium Content</h3>
+        <p class="text-[var(--color-text-secondary)] mb-6">
+          Upgrade to access this article and all premium content.
+        </p>
+        <a
+          href="/subscribe"
+          class="inline-block px-6 py-3 bg-[var(--color-accent)] font-medium rounded-lg hover:bg-[var(--color-accent-hover)] transition-colors"
+          style="color: white;"
+        >
+          Upgrade Now
+        </a>
+      </>
+    ) : (
+      <!-- User not signed in -->
+      <>
+        <h3 class="text-2xl font-bold text-[var(--color-text-primary)] mb-4">Subscribers Only</h3>
+        <p class="text-[var(--color-text-secondary)] mb-6">
+          Sign in or subscribe to read this article.
+        </p>
+        <div class="flex gap-4 justify-center">
+          <a
+            href="/auth/signin"
+            class="inline-block px-6 py-3 border border-[var(--color-border)] text-[var(--color-text-primary)] font-medium rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
+          >
+            Sign In
+          </a>
+          <a
+            href="/auth/signup"
+            class="inline-block px-6 py-3 bg-[var(--color-accent)] font-medium rounded-lg hover:bg-[var(--color-accent-hover)] transition-colors"
+            style="color: white;"
+          >
+            Subscribe
+          </a>
+        </div>
+      </>
+    )}
+  </div>
+</div>
+
+<style>
+  .blurred {
+    position: relative;
+    max-height: 200px;
+    overflow: hidden;
+  }
+
+  .blurred::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(to bottom, transparent, var(--color-bg-primary));
+  }
+</style>
