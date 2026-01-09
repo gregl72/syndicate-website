@@ -1,0 +1,12 @@
+node_modules
+dist
+.git
+.github
+.vscode
+.astro
+.env
+.env.local
+*.log
+npm-debug.log*
+.DS_Store
+README.md

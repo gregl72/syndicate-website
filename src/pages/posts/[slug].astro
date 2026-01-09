@@ -1,20 +1,12 @@
 ---
+export const prerender = false;
+
 import Base from '../../layouts/Base.astro';
-import { getAllPosts, getPostBySlug, formatDate } from '../../lib/ghost';
+import { getPostBySlug, formatDate } from '../../lib/ghost';
 
-export async function getStaticPaths() {
-  const posts = await getAllPosts();
-  return posts.map((post) => ({
-    params: { slug: post.slug },
-    props: { post },
-  }));
-}
-
+// SSR mode - fetch post data on each request
 const { slug } = Astro.params;
-const { post } = Astro.props;
-
-// Fallback fetch if not from static paths
-const postData = post || await getPostBySlug(slug as string);
+const postData = await getPostBySlug(slug as string);
 
 if (!postData) {
   return Astro.redirect('/404');

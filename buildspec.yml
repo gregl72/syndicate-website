@@ -4,28 +4,58 @@ env:
   secrets-manager:
     GHOST_CONTENT_API_KEY: "citizen-journal/ghost:api_key"
   variables:
+    AWS_ACCOUNT_ID: "180294198964"
+    ECR_REPOSITORY: "syndicate-ssr"
+    ECR_REGISTRY: "180294198964.dkr.ecr.us-east-1.amazonaws.com"
+    LAMBDA_FUNCTION_NAME: "syndicate-ssr"
+    GHOST_URL: "https://ad-astra-1.ghost.io"
     SUPABASE_URL: "https://njdfevfwljuyzipguqfp.supabase.co"
     SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qZGZldmZ3bGp1eXppcGd1cWZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NzY1ODQsImV4cCI6MjA4MzA1MjU4NH0.fTreOVawx0Pk03t_nQR3-GcKaD7yC2Ov9WZOjxansQw"
 
 phases:
-  install:
-    runtime-versions:
-      nodejs: 20
+  pre_build:
     commands:
+      - echo "Installing dependencies..."
       - npm ci
+      - echo "Logging into ECR..."
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
 
   build:
     commands:
-      - echo "Building site..."
+      - echo "Building Astro site..."
       - npm run build
+
+      - echo "Building Docker container..."
+      - docker build -t $ECR_REPOSITORY:latest .
+      - docker tag $ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
   post_build:
     commands:
-      - echo "Deploying to S3..."
-      - aws s3 sync dist/ s3://syndicate-website-prod/ --delete
+      - echo "Pushing container to ECR..."
+      - docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - echo "Updating Lambda function..."
+      - |
+        aws lambda update-function-code \
+          --function-name $LAMBDA_FUNCTION_NAME \
+          --image-uri $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+          --region us-east-1
+
+      - echo "Waiting for Lambda update to complete..."
+      - aws lambda wait function-updated --function-name $LAMBDA_FUNCTION_NAME --region us-east-1
+
+      - echo "Syncing static assets to S3 (for non-SSR routes)..."
+      - aws s3 sync dist/client/ s3://syndicate-website-prod/ --delete --cache-control "public, max-age=31536000, immutable"
+      - aws s3 sync public/ s3://syndicate-website-prod/public/ --cache-control "public, max-age=31536000, immutable"
+
       - echo "Invalidating CloudFront cache..."
       - aws cloudfront create-invalidation --distribution-id E8A9C5FXPTO0X --paths "/*"
 
 cache:
   paths:
     - node_modules/**/*
+
+artifacts:
+  files:
+    - '**/*'
+  name: syndicate-website-build
