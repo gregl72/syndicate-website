@@ -1,16 +1,16 @@
+# Stage 1: Get Lambda Web Adapter
+FROM public.ecr.aws/awsguru/aws-lambda-adapter:0.8.4 AS adapter
+
+# Stage 2: Build application
 FROM public.ecr.aws/docker/library/node:20-alpine
+
+# Copy Lambda Web Adapter from stage 1
+COPY --from=adapter /lambda-adapter /opt/extensions/lambda-adapter
 
 # Install dependencies for Lambda
 RUN apk add --no-cache \
     ca-certificates \
-    curl \
-    unzip
-
-# Install AWS Lambda Web Adapter
-RUN curl -Lo /tmp/aws-lambda-adapter.zip https://github.com/awslabs/aws-lambda-web-adapter/releases/download/v0.8.4/lambda-adapter-amd64.zip && \
-    unzip /tmp/aws-lambda-adapter.zip -d /opt && \
-    rm /tmp/aws-lambda-adapter.zip && \
-    chmod +x /opt/bootstrap
+    curl
 
 WORKDIR /app
 
