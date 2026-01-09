@@ -47,7 +47,7 @@ const { user } = Astro.props;
   // Check auth status client-side for static pages
   async function checkAuthStatus() {
     try {
-      const response = await fetch('/api/auth/session');
+      const response = await fetch('/api/auth/session', { credentials: 'include' });
       const data = await response.json();
 
       if (data.user) {
@@ -67,7 +67,7 @@ const { user } = Astro.props;
           // Add signout handler
           document.getElementById('signout-btn')?.addEventListener('click', async () => {
             try {
-              await fetch('/api/auth/signout', { method: 'POST' });
+              await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' });
               window.location.href = '/';
             } catch (error) {
               console.error('Sign out error:', error);
@@ -88,7 +88,7 @@ const { user } = Astro.props;
     // SSR page with user, just add signout handler
     document.getElementById('signout-btn')?.addEventListener('click', async () => {
       try {
-        await fetch('/api/auth/signout', { method: 'POST' });
+        await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' });
         window.location.href = '/';
       } catch (error) {
         console.error('Sign out error:', error);

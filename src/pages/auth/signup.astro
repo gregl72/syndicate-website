@@ -118,6 +118,7 @@ import Base from '../../layouts/Base.astro';
         const response = await fetch('/api/auth/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
             name: formData.get('name'),
             email: formData.get('email'),
