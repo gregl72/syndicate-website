@@ -3,7 +3,14 @@ FROM public.ecr.aws/docker/library/node:20-alpine
 # Install dependencies for Lambda
 RUN apk add --no-cache \
     ca-certificates \
-    curl
+    curl \
+    unzip
+
+# Install AWS Lambda Web Adapter
+RUN curl -Lo /tmp/aws-lambda-adapter.zip https://github.com/awslabs/aws-lambda-web-adapter/releases/download/v0.8.4/lambda-adapter-amd64.zip && \
+    unzip /tmp/aws-lambda-adapter.zip -d /opt && \
+    rm /tmp/aws-lambda-adapter.zip && \
+    chmod +x /opt/bootstrap
 
 WORKDIR /app
 
