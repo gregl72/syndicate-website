@@ -7,6 +7,17 @@ import { supabaseAdmin } from '../../../lib/supabase-admin';
 
 export const prerender = false;
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Credentials': 'true'
+};
+
+export const OPTIONS: APIRoute = async () => {
+  return new Response(null, { status: 204, headers: corsHeaders });
+};
+
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const { email, password, name } = await request.json();
@@ -97,7 +108,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       }
     }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json', ...corsHeaders }
     });
 
   } catch (error) {

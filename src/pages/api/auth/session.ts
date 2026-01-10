@@ -6,6 +6,17 @@ import { getCurrentUser, createSupabaseServerClient } from '../../../lib/supabas
 
 export const prerender = false;
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Credentials': 'true'
+};
+
+export const OPTIONS: APIRoute = async () => {
+  return new Response(null, { status: 204, headers: corsHeaders });
+};
+
 export const GET: APIRoute = async ({ cookies }) => {
   try {
     const user = await getCurrentUser(cookies);
@@ -16,7 +27,7 @@ export const GET: APIRoute = async ({ cookies }) => {
         subscription: null
       }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
       });
     }
 
@@ -36,7 +47,7 @@ export const GET: APIRoute = async ({ cookies }) => {
       subscription: subscription || null
     }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json', ...corsHeaders }
     });
 
   } catch (error) {

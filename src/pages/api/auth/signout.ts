@@ -6,6 +6,19 @@ import { createSupabaseServerClient } from '../../../lib/supabase-server';
 
 export const prerender = false;
 
+// Handle CORS preflight
+export const OPTIONS: APIRoute = async () => {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Credentials': 'true'
+    }
+  });
+};
+
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const supabase = createSupabaseServerClient(cookies);
@@ -33,6 +46,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const headers = new Headers();
     headers.set('Content-Type', 'application/json');
     headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    headers.set('Access-Control-Allow-Origin', '*');
+    headers.set('Access-Control-Allow-Credentials', 'true');
     expireCookies.forEach(cookie => headers.append('Set-Cookie', cookie));
 
     return new Response(JSON.stringify({
