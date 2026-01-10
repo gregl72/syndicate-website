@@ -32,10 +32,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const headers = new Headers();
     headers.set('Content-Type', 'application/json');
+    headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
     expireCookies.forEach(cookie => headers.append('Set-Cookie', cookie));
 
     return new Response(JSON.stringify({
-      success: true
+      success: true,
+      debug: {
+        foundCookies: cookieNames,
+        expiring: expireCookies
+      }
     }), {
       status: 200,
       headers
